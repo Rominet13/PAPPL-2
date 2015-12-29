@@ -25,7 +25,8 @@ public class AnToJson {
     private static Logger logger = Logger.getLogger("Logger");
 
     public static void methode(String nomAN) {
-        ecritureJson(ecritureStringJson(lectureAn(nomAN), nomAN), nomAN);
+//        ecritureJson(ecritureStringJson(lectureAn(nomAN), nomAN), nomAN);
+System.out.println(ecritureStringJson(lectureAn(nomAN), nomAN));
     }
 
     /**
