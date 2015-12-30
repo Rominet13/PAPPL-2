@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -114,7 +115,7 @@ public class AnToJson {
         boolean memeGroupe = true;
         while (!nomPrem.equals(nomProchainGene)) {  // faiblesse de la condition d'arrêt A AMELIORER
             gene += "    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n";
-            l.add(nomGeneTemporaire + ".1");   // numérote le moindre état d'un géne dans l'ordre
+            l.add(nomGeneTemporaire + ".0");   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n"); //1ère ligne du groupe suivant //tok.nextToken() vaut toujours 0 ici
 //                writer.write(tok.nextToken());
 //                writer.write(tok.nextToken());
@@ -147,6 +148,7 @@ public class AnToJson {
 //============================================================================================================ NODE COOP et flèche
         fleche = "  \"links\":[\n"; //écriture des 2 premières lignes pour la partie liens/links du fichier JSON
 
+        String nomProchainGene2 = ""; // pour gérer le "and"; nomProchainGene déjà utilisé pour le when dans cette partie. 
         boolean cooptest = false;
         while (!nomProchainGene.equals("initial_context")) {
             String etatIni = "0";    // état initial origine de la flèche 
@@ -158,42 +160,46 @@ public class AnToJson {
             etatFin = tok.nextToken();
 
             int source = 0, target = 0;
+            source = nomNumero(l, nomGeneTemporaire + "." + etatIni);  //utilité de la liste l du tout début de la méthode
+            target = nomNumero(l, nomGeneTemporaire + "." + etatFin);
+
+            int indiceCoop = l.size();
 
             ArrayList<String> nomCoop = new ArrayList<String>(); // liste des génes coopérants pour la frappe changeant l'état de nomGeneTemporaire.
             ArrayList<String> nomEtat = new ArrayList<String>(); // liste des états des gènes de la liste précédente.
-            if (!tok.nextToken().equals("when")) {
+            if (!(nomProchainGene = tok.nextToken()).equals("when")) { //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 //System.out.println("condition ");
                 nomCoop.add(tok.nextToken());
                 nomEtat.add(tok.nextToken());
-                while ((nomProchainGene = tok.nextToken()).equals("and")) {
-                    nomCoop.add(tok.nextToken());
-                    nomEtat.add(tok.nextToken());
+                while ((nomProchainGene2 = tok.nextToken()).equals("and")) {   //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                    nomCoop.add(tok.nextToken());  //on remplit la liste de coopérants...
+                    nomEtat.add(tok.nextToken());  //...avec leur états correspondant
                     cooptest = true;
                 }
-
+                if (cooptest) {
+                    String nomscoop = "";
+                    for (int j = 0; j < nomCoop.size(); j++) {
+                        nomscoop += nomCoop.get(j)+"."+nomEtat.get(j)+"/";
+                    }
+                    coop += "    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "},";  //création du noeud de coop
+                   
+                    for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
+                        fleche += " {\"source\":" +nomCoop.get(k)+"."+nomEtat.get(k)  + ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},";
+                    }
+                  nomCoop.clear(); //on remet les listes de coopérant à 0
+                  nomEtat.clear();
+                    fleche += " {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"type\":\"normal\"},"; // fleche du noeud de coop à l'état initial du géne frappé 
+                    indiceCoop++;
+                    nGroupe++;
+                } else {
+                    fleche += " {\"source\":" + nomCoop.get(0) + ",\"target\":" + source + ",\"type\":\"normal\"},";
+                }
+                cooptest=false;
             }
-            source = nomNumero(l, nomGeneTemporaire + "." + etatIni);
-            target = nomNumero(l, nomGeneTemporaire + "." + etatFin);
+
             fleche += " {\"source\":" + source + ",\"target\":" + target + ",\"type\":\"normal\"},";       // écriture de la fléche de saut d'état d'un gène
 
             
-            
-            while (cooptest) {   // boucle pour les états d'un gène (si plus de 1 état dans le gène
-
-                nomProchainGene = tok.nextToken();       // = numéro de l'état tant qu'il y a un état à rajouter au groupe (ou gène); sinon = au nom du prochain gène à traiter
-                //    System.out.println(nomProchainGene);
-                if (nomProchainGene.equals(Integer.toString(etat))) {
-                    gene += "    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n";
-//writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
-//           System.out.println(tok.nextElement());
-//           System.out.println(tok.nextElement());
-                    etat++;
-                } else {
-                    cooptest = false;
-                }
-//                System.out.println("etat : " + etat);
-            }
-
         } //fin while de fleche. On passe à la situation initiale.
 
 //            while (tok.hasMoreElements()) {
@@ -241,6 +247,9 @@ public class AnToJson {
             logger.severe("ERREUR: dans nomNumero, Dépassement de la taille de la liste!!!");
         }
         return i;
+        /* for (Iterator<String> it = nomCoop.iterator(); it.hasNext();) {
+                        nomscoop += it.next();
+                    }*/
     }
 }
 
