@@ -1,8 +1,18 @@
 /*
- * Classe lisant le ficher .an et creéant le fichier .json correspondant
+ * Résumé: Classe lisant le ficher .an et creéant le fichier .json correspondant
  * avec automatiquement le même nom (seul l'extension change.)
- *
  * Le nom du fichier .an à lire est rentré en paramétre, sans son extension .an. 
+ * 
+ * Code: 4 méthodes "static"  (car l'utilisation est ponctuelle et ne nécessite pas d'attribut. On raisonne peut-être plus en impératif qu'en objet.)
+ *     *lectureAn   -la  1ère lit le fichier .an, avec en paramétre son nom privé de son extension. Et elle stoque tout le texte dans un String ("contenu") qu'elle retourne.  
+ *     *ecritureStringJson  -la 2nd "parse" (ou traite) le texte de "contenu" en paramétre et écrit le futur contenu du fichier .json dans des Strings intermédiaires (variables locales: gene, coop et fleche).
+ *          Elle fonctionne donc en 2 étapes: remplit d'abord gene, puis coop et fleche en même temps.
+ *          Elle retourne un String (voir si pas plutot un tableau de String mieux? version futur) correpondant à la "concaténation"(moyennant 2-3 lignes en plus) dans l'odre de gene, coopt et fleche.  
+ *     *ecritureJson   -la 3ieme crée et écrit le .json avec le String retourné par la méthode 2.
+ *     *methode (ouais je sais: c'est très original^^) -la 4ieme appelle les autres méthodes dans l'ordre de manière à exécuter l'opération de conversion en 1 appel.
+ *
+ *  // peut être plus pratique avec l'utilisation des classes StringBuffer et StringBuilder (plus flexible, on peut modifier la chaine)
+ *
  */
 package conversionanjson;
 
@@ -26,7 +36,7 @@ public class AnToJson {
 
     public static void methode(String nomAN) {
 //        ecritureJson(ecritureStringJson(lectureAn(nomAN), nomAN), nomAN);
-System.out.println(ecritureStringJson(lectureAn(nomAN), nomAN));
+        System.out.println(ecritureStringJson(lectureAn(nomAN), nomAN));
     }
 
     /**
@@ -35,22 +45,22 @@ System.out.println(ecritureStringJson(lectureAn(nomAN), nomAN));
      *
      * @param nomAN type String, correspondant au nom sans son extension ".an"
      * du fichier .an à lire
-     * @return remplisseur type String, correspondant exactement au texte du
-     * fichier .an
+     * @return contenu type String, correspondant exactement au texte du fichier
+     * .an
      */
     private static String lectureAn(String nomAN) {
-        String remplisseur = null; // null parceque sinon netbeans détecte qu'il n'a potentiellement pas été initialisé....
+        String contenu = null; // null parceque sinon netbeans détecte qu'il n'a potentiellement pas été initialisé....
         String tmp; // pour stocker la ligne courante en même temps qu'on fait le test
         //tmp est initialisé et changer dans la condition du while. Il y a surement mieux à faire.
         try {
             BufferedReader reader = new BufferedReader(new FileReader(nomAN + ".an")); //ouverture du fichier à lire
             logger.info("Ficher " + nomAN + ".an ouvert.");
 
-            remplisseur = reader.readLine();   // initialisation de remplissseur sur la 1ère ligne //On aurait aussi pu utiliser nomAN puiqu'il est inutile pour la suite de cette méthode
+            contenu = reader.readLine();   // initialisation de remplissseur sur la 1ère ligne //On aurait aussi pu utiliser nomAN puiqu'il est inutile pour la suite de cette méthode
             while ((tmp = reader.readLine()) != null) {  // while pour parcourir chaque ligne qui est stocker dans tmp en même temps que l'on vérifie que ligne non vide
                 //On est obliger d'utiliser tmp car le readline fait passer à la ligne suivante.
-                remplisseur += "\n"; //indique le saut de ligne
-                remplisseur += tmp; //on ajoute la nouvelle ligne
+                contenu += "\n"; //indique le saut de ligne
+                contenu += tmp; //on ajoute la nouvelle ligne
             }
 
             reader.close(); // fermeture du BufferedReader
@@ -64,7 +74,7 @@ System.out.println(ecritureStringJson(lectureAn(nomAN), nomAN));
         } finally {
 //useless
         }
-        return remplisseur;
+        return contenu;
     }
 
     /**
@@ -80,73 +90,75 @@ System.out.println(ecritureStringJson(lectureAn(nomAN), nomAN));
      *
      */
     public static String ecritureStringJson(String remplisseur, String nomAN) {
-String gene="";
-String coop="";
-String fleche="";
-        
+        String gene = "";
+        String coop = "";
+        String fleche = "";
 
-            String delimiteurs = " \n\",[]";           //initialisation du tokenizer pour parser le string ( \n pour les saut de ligne, sinon considéré comme un mot espace par le tok)
-            StringTokenizer tok = new StringTokenizer(remplisseur, delimiteurs);
+        String delimiteurs = " \n\",[]";           //initialisation du tokenizer pour parser le string ( \n pour les saut de ligne, sinon considéré comme un mot espace par le tok)
+        StringTokenizer tok = new StringTokenizer(remplisseur, delimiteurs);
 //============================================================================================================ NODE GENES
-            //Convention: saut de ligne via "\n" (aucun BufferedWriter.newLine();) (but éviter de se perdre dans les mélanges 
-gene="{\n" + "  \"nodes\":[\n";            
+        //Convention: saut de ligne via "\n" (aucun BufferedWriter.newLine();) (but éviter de se perdre dans les mélanges 
+        gene = "{\n" + "  \"nodes\":[\n";
 //writer.write("{\n" + "  \"nodes\":[\n"); // écriture 2 1ères ligne d'entête ; situation: dans écriture des "nodes" (gènes) 
 
-            int nGroupe = 1;
-            String nomGeneTemporaire = tok.nextToken(); //utilisé pour les différents états du géne.
-            String nomPrem = nomGeneTemporaire; // utilisé pour détecter la sortie de la boucle de création des gènes, et rentrer dans la partie "links" 
+        int nGroupe = 1;
+        String nomGeneTemporaire = tok.nextToken(); //utilisé pour les différents états du géne.
+        String nomPrem = nomGeneTemporaire; // utilisé pour détecter la sortie de la boucle de création des gènes, et rentrer dans la partie "links" 
 
-            String nomProchainGene = null; //voir utilité après //obligé de l'initialiser pour éviter avertissement de netbeans.            
-            while (!nomPrem.equals(nomProchainGene)) {
-gene+="    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n";
+        String nomProchainGene = null; //voir utilité après //obligé de l'initialiser pour éviter avertissement de netbeans.            
+        while (!nomPrem.equals(nomProchainGene)) {
+            gene += "    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n";
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n"); //1ère ligne du groupe suivant //tok.nextToken() vaut toujours 0 ici
 //                writer.write(tok.nextToken());
 //                writer.write(tok.nextToken());
 //                writer.write(tok.nextToken());
 
-                boolean memeGroupe = true;
+            boolean memeGroupe = true;
 
-                while (memeGroupe) {   // boucle pour les états d'un gène (si plus de 1 état dans le gène
-                    int etat = 1;
-                    nomProchainGene = tok.nextToken();       // = numéro de l'état tant qu'il y a un état à rajouter au groupe (ou gène); sinon = au nom du prochain gène à traiter
-                    System.out.println(nomProchainGene);
-                    if (nomProchainGene.equals(Integer.toString(etat))) {
-                        gene+="    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n";
+            while (memeGroupe) {   // boucle pour les états d'un gène (si plus de 1 état dans le gène
+                int etat = 1;
+                nomProchainGene = tok.nextToken();       // = numéro de l'état tant qu'il y a un état à rajouter au groupe (ou gène); sinon = au nom du prochain gène à traiter
+                System.out.println(nomProchainGene);
+                if (nomProchainGene.equals(Integer.toString(etat))) {
+                    gene += "    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n";
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
 //           System.out.println(tok.nextElement());
 //           System.out.println(tok.nextElement());
-                        etat++;
-                    } else {
-                        memeGroupe = false;
-                    }
-//                System.out.println("etat : " + etat);
+                    etat++;
+                } else {
+                    memeGroupe = false;
                 }
-                memeGroupe = true; // pour re rentrer dans les boucles des états d'un autre géne.
-
-                nGroupe++; // on passe au groupe suivant
-                nomGeneTemporaire = nomProchainGene; //Importance de nomProchainGene, qui sera encore utilisé dans le prochain if de la boucle while pour les états.
+//                System.out.println("etat : " + etat);
             }
+            memeGroupe = true; // pour re rentrer dans les boucles des états d'un autre géne.
+
+            nGroupe++; // on passe au groupe suivant
+            nomGeneTemporaire = nomProchainGene; //Importance de nomProchainGene, qui sera encore utilisé dans le prochain if de la boucle while pour les états.
+        }
 //============================================================================================================ NODE COOP
 
 //            while (tok.hasMoreElements()) {
 //                writer.write(tok.nextToken()); 
 //            }
-  String remplisseurFinal = gene+coop+fleche;  
-return remplisseurFinal;
+        String remplisseurFinal = gene + coop + fleche;
+        return remplisseurFinal;
     }
-/**
- * Méthode final, qui crée et écrit le fichier .json (nomAN.json)
- * @param remplisseur
- * @param nomAN 
- */
+
+    /**
+     * Méthode final, qui crée et écrit le fichier .json (nomAN.json)
+     *
+     * @param remplisseur
+     * @param nomAN
+     */
     public static void ecritureJson(String remplisseurFinal, String nomAN) {
-                try {
+        try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(nomAN + ".json")); //création du fichier .json ( à remplir)
             logger.info("Ficher " + nomAN + ".json créé, et à remplir.");
-        writer.close();  // pas oublié de fermer le flux (serait mieux dans le finally
+
+            writer.close();  // pas oublié de fermer le flux (serait mieux dans le finally
         } catch (IOException e2) {
             System.err.println("Problème d'écriture du nouveau fichier.");
-            e2.toString();
+            e2.printStackTrace();
         } finally {
 //useless for the moment
         }
