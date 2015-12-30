@@ -17,6 +17,8 @@ public class ConversionAnJson {
     public static void main(String[] args) {
         AnToJson.methode("circlock");
 //System.out.println("11\t22\n3-3\r44\f55\r6");
+//StringBuffer a1 = new StringBuffer();
+//a1.append("salut"); //mieux permet le delete à tel position...
     }
     
 }
