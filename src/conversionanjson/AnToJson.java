@@ -72,6 +72,7 @@ public class AnToJson {
             }
 
             reader.close(); // fermeture du BufferedReader
+            logger.info("Fichier .an lu et stoqué dans un String.");
 //            System.out.println(remplisseur);  //test de vérification
         } catch (FileNotFoundException e1) {
             System.err.println("Problème d'ouverture du fichier.");
@@ -99,17 +100,17 @@ public class AnToJson {
      * //Convention: saut de ligne via "\n" (aucun BufferedWriter.newLine();)
      * (but éviter de se perdre dans les mélanges
      */
-    public static String ecritureStringJson(String remplisseur) {
-        String gene = "";
-        String coop = "";
-        String fleche = "";
+    public static StringBuffer ecritureStringJson(String remplisseur) {
+        StringBuffer gene = new StringBuffer();
+        StringBuffer coop = new StringBuffer();
+        StringBuffer fleche = new StringBuffer();
         ArrayList<String> l = new ArrayList<String>();  // Indispensable pour la partie flèche. Liste chaque état de chaque géne dans l'ordre. Le numéro de la ligne est indispensable pour bien positionner les flèches
 
         String delimiteurs = " \n\",[]=";           //initialisation du tokenizer pour parser le string ( \n pour les saut de ligne, sinon considéré comme un mot espace par le tok)
         StringTokenizer tok = new StringTokenizer(remplisseur, delimiteurs);
 //============================================================================================================ NODE GENES
 
-        gene = "{\n" + "  \"nodes\":[\n";  // écriture 2 1ères ligne d'entête ; situation: dans écriture des "nodes" (gènes) 
+        gene.append("{\n" + "  \"nodes\":[\n");  // écriture 2 1ères ligne d'entête ; situation: dans écriture des "nodes" (gènes) 
 //writer.write("{\n" + "  \"nodes\":[\n"); 
 
         int nGroupe = 1;
@@ -120,7 +121,7 @@ public class AnToJson {
         int etat = 1;
         boolean memeGroupe = true;
         while (!nomPrem.equals(nomProchainGene)) {  // faiblesse de la condition d'arrêt A AMELIORER
-            gene += "    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n";
+            gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n");
             l.add(nomGeneTemporaire + ".0");   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n"); //1ère ligne du groupe suivant //tok.nextToken() vaut toujours 0 ici
 //                writer.write(tok.nextToken());
@@ -134,7 +135,7 @@ public class AnToJson {
                 nomProchainGene = tok.nextToken();       // = numéro de l'état tant qu'il y a un état à rajouter au groupe (ou gène); sinon = au nom du prochain gène à traiter
                 //    System.out.println(nomProchainGene);
                 if (nomProchainGene.equals(Integer.toString(etat))) {
-                    gene += "    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n";
+                    gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
                     l.add(nomGeneTemporaire + "." + etat);   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
 //           System.out.println(tok.nextElement());
@@ -150,10 +151,10 @@ public class AnToJson {
             nGroupe++; // on passe au groupe suivant
             nomGeneTemporaire = nomProchainGene; //Importance de nomProchainGene, qui sera encore utilisé dans le prochain if de la boucle while pour les états.
         }
-        System.out.println("gene: " + gene);
+//        System.out.println("gene: " + gene);  // juste pour tester
 //A la sortie, "nomProchainGene" ou "nomGeneTemporaire = au nom du 1er genes avec changement d'état, suite à une frappe en coop ou pas.
 //============================================================================================================ NODE COOP et flèche
-        fleche = "  \"links\":[\n"; //écriture des 2 premières lignes pour la partie liens/links du fichier JSON
+        fleche.append("  \"links\":[\n"); //écriture des 2 premières lignes pour la partie liens/links du fichier JSON
 
         //inutil  String nomProchainGene2 = ""; // pour gérer le "and"; nomProchainGene déjà utilisé pour le when dans cette partie. 
         String etatIni = "0";    // état initial origine de la flèche 
@@ -189,19 +190,19 @@ public class AnToJson {
                     for (int j = 0; j < nomCoop.size(); j++) {
                         nomscoop += nomCoop.get(j) + "." + nomEtat.get(j) + "/";
                     }
-                    coop += "    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "},\n";  //création du noeud de coop
+                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "},\n");  //création du noeud de coop
 
                     for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
 
-                        fleche += " {\"source\":" + nomNumero(l, nomCoop.get(k) + "." + nomEtat.get(k)) + ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},\n";
+                        fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(k) + "." + nomEtat.get(k)) + ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},\n");
                     }
 
-                    fleche += " {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"type\":\"normal\"},\n"; // fleche du noeud de coop à l'état initial du géne frappé 
+                    fleche.append(" {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"type\":\"normal\"},\n"); // fleche du noeud de coop à l'état initial du géne frappé 
                     indiceCoop++; // valeur pour la prochaine coop
                     nGroupe++;    // idem 
 
                 } else {
-                    fleche += " {\"source\":" + nomNumero(l, nomCoop.get(0) + "." + nomEtat.get(0)) + ",\"target\":" + source + ",\"type\":\"normal\"},\n";
+                    fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(0) + "." + nomEtat.get(0)) + ",\"target\":" + source + ",\"type\":\"normal\"},\n");
 
                 }
                 cooptest = false; //pas oublier pour la prochaine boucle
@@ -210,7 +211,7 @@ public class AnToJson {
             nomCoop.clear(); //on remet les listes de coopérant à 0
             nomEtat.clear();
 
-            fleche += " {\"source\":" + source + ",\"target\":" + target + ",\"type\":\"normal\"},\n";       // écriture de la fléche de saut d'état d'un gène
+            fleche.append(" {\"source\":" + source + ",\"target\":" + target + ",\"type\":\"normal\"},\n");       // écriture de la fléche de saut d'état d'un gène
             nomGeneTemporaire = nomProchainGene;
 //            System.out.println("coop: "+coop+"\n"+"fleche: "+fleche+"\n"); //"gene: "+gene+"\n"+
         } //fin while de fleche. On passe à la situation initiale.
@@ -218,7 +219,8 @@ public class AnToJson {
 //            while (tok.hasMoreElements()) {
 //                writer.write(tok.nextToken()); 
 //            }
-        String remplisseurFinal = gene + coop + fleche;
+        StringBuffer remplisseurFinal = gene.append(coop).append(fleche);
+        logger.info("Parser et traitement du tokenizer sont finis.");
         return remplisseurFinal;
     }
 
@@ -228,14 +230,15 @@ public class AnToJson {
      * @param remplisseur
      * @param nomAN
      */
-    public static void ecritureJson(String remplisseurFinal, String nomAN) {
+    public static void ecritureJson(StringBuffer remplisseurFinal, String nomAN) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(nomAN + ".json")); //création du fichier .json ( à remplir)
             logger.info("Ficher " + nomAN + ".json créé, et à remplir.");
 
-            writer.write(remplisseurFinal);   // écriture
+            writer.write(remplisseurFinal.toString());   // écriture
 
             writer.close();  // pas oublié de fermer le flux (serait mieux dans le finally
+            logger.info("Ficher " + nomAN + ".json remplit.");
         } catch (IOException e2) {
             System.err.println("Problème d'écriture du nouveau fichier.");
             e2.printStackTrace();
