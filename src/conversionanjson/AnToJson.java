@@ -19,7 +19,7 @@
  *                       -faire 2 débuggers pour vérifier le .an si ne reconnait pas le fichier .an : -1 dans une autre classe qui regard la struture global du fichier et la présence de commentaire en indiquant la ligne où il se trouve.
  *                                                                              -1 ici qui suit en détails et permet d'indiquer la ligne problèmatique du .an
  *
- */                                                                            
+ */
 package conversionanjson;
 
 import java.io.BufferedReader;
@@ -150,74 +150,69 @@ public class AnToJson {
             nGroupe++; // on passe au groupe suivant
             nomGeneTemporaire = nomProchainGene; //Importance de nomProchainGene, qui sera encore utilisé dans le prochain if de la boucle while pour les états.
         }
-        System.out.println("gene: "+gene);
+        System.out.println("gene: " + gene);
 //A la sortie, "nomProchainGene" ou "nomGeneTemporaire = au nom du 1er genes avec changement d'état, suite à une frappe en coop ou pas.
 //============================================================================================================ NODE COOP et flèche
         fleche = "  \"links\":[\n"; //écriture des 2 premières lignes pour la partie liens/links du fichier JSON
 
-      //inutil  String nomProchainGene2 = ""; // pour gérer le "and"; nomProchainGene déjà utilisé pour le when dans cette partie. 
-        
+        //inutil  String nomProchainGene2 = ""; // pour gérer le "and"; nomProchainGene déjà utilisé pour le when dans cette partie. 
         String etatIni = "0";    // état initial origine de la flèche 
         String etatFin = "1";    // état final extrémitée de la flèche 
-        int source = 0, target = 0;
-        int indiceCoop = l.size();
+        int source = 0, target = 0; // pour la transition d'état de geneTemporaire (celui qui subit la frappe)
+        int indiceCoop = l.size();  // pour avoir la ligne/indice qui permet de bien diriger les flèches.
         ArrayList<String> nomCoop = new ArrayList<String>(); // liste des génes coopérants pour la frappe changeant l'état de nomGeneTemporaire.
         ArrayList<String> nomEtat = new ArrayList<String>(); // liste des états des gènes de la liste précédente.
         boolean cooptest = false;
-        
+
         while (!nomProchainGene.equals("initial_context")) {
-           
+
             etatIni = tok.nextToken();
             if (!tok.nextToken().equals("->")) {
-                System.out.println("Manque une flèche \"->\" ou problème ");
+                logger.severe("Manque une flèche \"->\" ou problème ");
             }
             etatFin = tok.nextToken();
 
-            
             source = nomNumero(l, nomGeneTemporaire + "." + etatIni);  //utilité de la liste l du tout début de la méthode
             target = nomNumero(l, nomGeneTemporaire + "." + etatFin);
 
-            
-
-            
             if ((nomProchainGene = tok.nextToken()).equals("when")) { //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 //System.out.println("condition ");
                 nomCoop.add(tok.nextToken());
                 nomEtat.add(tok.nextToken());
                 while ((nomProchainGene = tok.nextToken()).equals("and")) {   //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     nomCoop.add(tok.nextToken());  //on remplit la liste de coopérants...
-                    nomEtat.add(tok.nextToken());  //...avec leur états correspondant
+                    nomEtat.add(tok.nextToken());  //...avec leur état correspondant
                     cooptest = true;
                 }
                 if (cooptest) {
                     String nomscoop = "";
                     for (int j = 0; j < nomCoop.size(); j++) {
-                        nomscoop += nomCoop.get(j)+"."+nomEtat.get(j)+"/";
+                        nomscoop += nomCoop.get(j) + "." + nomEtat.get(j) + "/";
                     }
                     coop += "    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "},\n";  //création du noeud de coop
-                   
-                    for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
-                        
-                        fleche += " {\"source\":" +nomNumero(l, nomCoop.get(k)+"."+nomEtat.get(k))+ ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},\n";
-                    }
-                  
-                    fleche += " {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"type\":\"normal\"},\n"; // fleche du noeud de coop à l'état initial du géne frappé 
-                    indiceCoop++;
-                    nGroupe++;
-                              
-                } else {
-                    fleche += " {\"source\":" + nomNumero(l,nomCoop.get(0)+"."+nomEtat.get(0)) + ",\"target\":" + source + ",\"type\":\"normal\"},\n";
-                    
-                }
-                cooptest=false;
-                
-            }
-                  nomCoop.clear(); //on remet les listes de coopérant à 0
-                  nomEtat.clear();
 
-            fleche += " {\"source\":" + source + ",\"target\":" +target + ",\"type\":\"normal\"},\n";       // écriture de la fléche de saut d'état d'un gène
-nomGeneTemporaire=nomProchainGene;
-            System.out.println("coop: "+coop+"\n"+"fleche: "+fleche+"\n"); //"gene: "+gene+"\n"+
+                    for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
+
+                        fleche += " {\"source\":" + nomNumero(l, nomCoop.get(k) + "." + nomEtat.get(k)) + ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},\n";
+                    }
+
+                    fleche += " {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"type\":\"normal\"},\n"; // fleche du noeud de coop à l'état initial du géne frappé 
+                    indiceCoop++; // valeur pour la prochaine coop
+                    nGroupe++;    // idem 
+
+                } else {
+                    fleche += " {\"source\":" + nomNumero(l, nomCoop.get(0) + "." + nomEtat.get(0)) + ",\"target\":" + source + ",\"type\":\"normal\"},\n";
+
+                }
+                cooptest = false; //pas oublier pour la prochaine boucle
+
+            }
+            nomCoop.clear(); //on remet les listes de coopérant à 0
+            nomEtat.clear();
+
+            fleche += " {\"source\":" + source + ",\"target\":" + target + ",\"type\":\"normal\"},\n";       // écriture de la fléche de saut d'état d'un gène
+            nomGeneTemporaire = nomProchainGene;
+//            System.out.println("coop: "+coop+"\n"+"fleche: "+fleche+"\n"); //"gene: "+gene+"\n"+
         } //fin while de fleche. On passe à la situation initiale.
 
 //            while (tok.hasMoreElements()) {
