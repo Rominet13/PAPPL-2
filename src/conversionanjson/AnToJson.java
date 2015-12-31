@@ -219,6 +219,10 @@ public class AnToJson {
 //            while (tok.hasMoreElements()) {
 //                writer.write(tok.nextToken()); 
 //            }
+        coop.deleteCharAt(coop.lastIndexOf(","));
+        coop.append("  ],\n");
+        fleche.deleteCharAt(fleche.lastIndexOf(","));
+        fleche.append("  ]\n" +"}");
         StringBuffer remplisseurFinal = gene.append(coop).append(fleche);
         logger.info("Parser et traitement du tokenizer sont finis.");
         return remplisseurFinal;
