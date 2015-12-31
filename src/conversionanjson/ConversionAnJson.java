@@ -23,7 +23,8 @@ public class ConversionAnJson {
 //System.out.println(a1.length());
 //        System.out.println(a1);
 //        a1.deleteCharAt(20);
-//        System.out.println(a1);
+//        a1.append("ajout");
+//        System.out.println(a1.toString());
     }
     
 }
