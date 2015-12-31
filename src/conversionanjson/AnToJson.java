@@ -2,7 +2,7 @@
  * Résumé: Classe lisant le ficher .an et creéant le fichier .json correspondant
  * avec automatiquement le même nom (seul l'extension change.)
  * Le nom du fichier .an à lire est rentré en paramétre, sans son extension .an. 
- * 
+ * ATTENTION: il ne doit pas y avoir de commentaire dans le fichier source .an!!
  * Code: 4 méthodes "static"  (car l'utilisation est ponctuelle et ne nécessite pas d'attribut. On raisonne peut-être plus en impératif qu'en objet.)
  *     *lectureAn   -la  1ère lit le fichier .an, avec en paramétre son nom privé de son extension. Et elle stoque tout le texte dans un String ("contenu") qu'elle retourne.  
  *     *ecritureStringJson  -la 2nd "parse" (ou traite) le texte de "contenu" en paramétre et écrit le futur contenu du fichier .json dans des Strings intermédiaires (variables locales: gene, coop et fleche).
@@ -13,7 +13,13 @@
  *
  *  // peut être plus pratique avec l'utilisation des classes StringBuffer et StringBuilder (plus flexible, on peut modifier la chaine)
  *
- */
+ *  A ajouter:           -faire initial_context
+ *                        -passer le String en StringBuffer pour supprimer les virgules en trop à la fin.
+ *                       -autoriser les commentaires dans le fichier .an ou crée une classe qui les supprime tout en gardant celui avec les commentaires
+ *                       -faire 2 débuggers pour vérifier le .an si ne reconnait pas le fichier .an : -1 dans une autre classe qui regard la struture global du fichier et la présence de commentaire en indiquant la ligne où il se trouve.
+ *                                                                              -1 ici qui suit en détails et permet d'indiquer la ligne problèmatique du .an
+ *
+ */                                                                            
 package conversionanjson;
 
 import java.io.BufferedReader;
@@ -144,34 +150,41 @@ public class AnToJson {
             nGroupe++; // on passe au groupe suivant
             nomGeneTemporaire = nomProchainGene; //Importance de nomProchainGene, qui sera encore utilisé dans le prochain if de la boucle while pour les états.
         }
+        System.out.println("gene: "+gene);
 //A la sortie, "nomProchainGene" ou "nomGeneTemporaire = au nom du 1er genes avec changement d'état, suite à une frappe en coop ou pas.
 //============================================================================================================ NODE COOP et flèche
         fleche = "  \"links\":[\n"; //écriture des 2 premières lignes pour la partie liens/links du fichier JSON
 
-        String nomProchainGene2 = ""; // pour gérer le "and"; nomProchainGene déjà utilisé pour le when dans cette partie. 
+      //inutil  String nomProchainGene2 = ""; // pour gérer le "and"; nomProchainGene déjà utilisé pour le when dans cette partie. 
+        
+        String etatIni = "0";    // état initial origine de la flèche 
+        String etatFin = "1";    // état final extrémitée de la flèche 
+        int source = 0, target = 0;
+        int indiceCoop = l.size();
+        ArrayList<String> nomCoop = new ArrayList<String>(); // liste des génes coopérants pour la frappe changeant l'état de nomGeneTemporaire.
+        ArrayList<String> nomEtat = new ArrayList<String>(); // liste des états des gènes de la liste précédente.
         boolean cooptest = false;
+        
         while (!nomProchainGene.equals("initial_context")) {
-            String etatIni = "0";    // état initial origine de la flèche 
-            String etatFin = "1";    // état final extrémitée de la flèche 
+           
             etatIni = tok.nextToken();
             if (!tok.nextToken().equals("->")) {
                 System.out.println("Manque une flèche \"->\" ou problème ");
             }
             etatFin = tok.nextToken();
 
-            int source = 0, target = 0;
+            
             source = nomNumero(l, nomGeneTemporaire + "." + etatIni);  //utilité de la liste l du tout début de la méthode
             target = nomNumero(l, nomGeneTemporaire + "." + etatFin);
 
-            int indiceCoop = l.size();
+            
 
-            ArrayList<String> nomCoop = new ArrayList<String>(); // liste des génes coopérants pour la frappe changeant l'état de nomGeneTemporaire.
-            ArrayList<String> nomEtat = new ArrayList<String>(); // liste des états des gènes de la liste précédente.
-            if (!(nomProchainGene = tok.nextToken()).equals("when")) { //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            
+            if ((nomProchainGene = tok.nextToken()).equals("when")) { //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 //System.out.println("condition ");
                 nomCoop.add(tok.nextToken());
                 nomEtat.add(tok.nextToken());
-                while ((nomProchainGene2 = tok.nextToken()).equals("and")) {   //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                while ((nomProchainGene = tok.nextToken()).equals("and")) {   //AAAAAAAAAAAAAAAAAAAA VERIF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                     nomCoop.add(tok.nextToken());  //on remplit la liste de coopérants...
                     nomEtat.add(tok.nextToken());  //...avec leur états correspondant
                     cooptest = true;
@@ -181,25 +194,30 @@ public class AnToJson {
                     for (int j = 0; j < nomCoop.size(); j++) {
                         nomscoop += nomCoop.get(j)+"."+nomEtat.get(j)+"/";
                     }
-                    coop += "    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "},";  //création du noeud de coop
+                    coop += "    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "},\n";  //création du noeud de coop
                    
                     for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
-                        fleche += " {\"source\":" +nomCoop.get(k)+"."+nomEtat.get(k)  + ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},";
+                        
+                        fleche += " {\"source\":" +nomNumero(l, nomCoop.get(k)+"."+nomEtat.get(k))+ ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},\n";
                     }
-                  nomCoop.clear(); //on remet les listes de coopérant à 0
-                  nomEtat.clear();
-                    fleche += " {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"type\":\"normal\"},"; // fleche du noeud de coop à l'état initial du géne frappé 
+                  
+                    fleche += " {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"type\":\"normal\"},\n"; // fleche du noeud de coop à l'état initial du géne frappé 
                     indiceCoop++;
                     nGroupe++;
+                              
                 } else {
-                    fleche += " {\"source\":" + nomCoop.get(0) + ",\"target\":" + source + ",\"type\":\"normal\"},";
+                    fleche += " {\"source\":" + nomNumero(l,nomCoop.get(0)+"."+nomEtat.get(0)) + ",\"target\":" + source + ",\"type\":\"normal\"},\n";
+                    
                 }
                 cooptest=false;
+                
             }
+                  nomCoop.clear(); //on remet les listes de coopérant à 0
+                  nomEtat.clear();
 
-            fleche += " {\"source\":" + source + ",\"target\":" + target + ",\"type\":\"normal\"},";       // écriture de la fléche de saut d'état d'un gène
-
-            
+            fleche += " {\"source\":" + source + ",\"target\":" +target + ",\"type\":\"normal\"},\n";       // écriture de la fléche de saut d'état d'un gène
+nomGeneTemporaire=nomProchainGene;
+            System.out.println("coop: "+coop+"\n"+"fleche: "+fleche+"\n"); //"gene: "+gene+"\n"+
         } //fin while de fleche. On passe à la situation initiale.
 
 //            while (tok.hasMoreElements()) {
@@ -243,7 +261,7 @@ public class AnToJson {
         while (!l.get(i).equals(nom) && i < l.size()) {
             i++;
         }
-        if (i < l.size()) {
+        if (i == l.size()) {
             logger.severe("ERREUR: dans nomNumero, Dépassement de la taille de la liste!!!");
         }
         return i;
