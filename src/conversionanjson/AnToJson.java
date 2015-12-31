@@ -44,7 +44,7 @@ public class AnToJson {
 
     public static void methode(String nomAN) {
 //        ecritureJson(ecritureStringJson(lectureAn(nomAN), nomAN), nomAN);
-        System.out.println(ecritureStringJson(lectureAn(nomAN), nomAN));
+        ecritureJson(ecritureStringJson(lectureAn(nomAN)), nomAN);
     }
 
     /**
@@ -99,7 +99,7 @@ public class AnToJson {
      * //Convention: saut de ligne via "\n" (aucun BufferedWriter.newLine();)
      * (but éviter de se perdre dans les mélanges
      */
-    public static String ecritureStringJson(String remplisseur, String nomAN) {
+    public static String ecritureStringJson(String remplisseur) {
         String gene = "";
         String coop = "";
         String fleche = "";
