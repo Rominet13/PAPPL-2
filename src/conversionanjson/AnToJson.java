@@ -86,6 +86,32 @@ public class AnToJson {
         return contenu;
     }
 
+    public static void decommenteur(String contenu) {
+        if(contenu.contains("%")){
+        StringBuffer contenub = new StringBuffer(contenu);
+        String delimiteurs = "%\n";
+        StringTokenizer tok = new StringTokenizer(contenu, delimiteurs);
+        String nvContenu="";
+        String tmp="";
+        String prem = String.valueOf(contenub.charAt(0));
+            if (prem=="%") {
+                tok.nextToken();
+            }
+        if (tok.hasMoreElements()) {
+            nvContenu+=tok.nextToken();
+        }
+        }
+        else{
+            System.out.println("0 commentaire court!" );
+        }
+        if (contenu.contains("/*")) {
+            
+        }
+        else{
+            System.out.println("0 commentaire long!" );
+        }
+    }
+
     /**
      * Méthode qui traite le String retourné par "lectureAn", et écrit le
      * fichier ".json".
@@ -222,7 +248,7 @@ public class AnToJson {
         coop.deleteCharAt(coop.lastIndexOf(","));
         coop.append("  ],\n");
         fleche.deleteCharAt(fleche.lastIndexOf(","));
-        fleche.append("  ]\n" +"}");
+        fleche.append("  ]\n" + "}");
         StringBuffer remplisseurFinal = gene.append(coop).append(fleche);
         logger.info("Parser et traitement du tokenizer sont finis.");
         return remplisseurFinal;
