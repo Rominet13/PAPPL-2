@@ -15,7 +15,8 @@ public class ConversionAnJson {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        AnToJson.methode("circlock");
+        AnToJson.methode("ERBB_G1-S");
+        
 //System.out.println("11\t22\n3-3\r44\f55\r6");
 //StringBuffer a1 = new StringBuffer();
 //a1.append("salut, et toi, ca va,"); //mieux permet le delete à tel position...
