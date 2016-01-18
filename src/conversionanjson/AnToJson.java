@@ -202,7 +202,9 @@ public class AnToJson {
         ArrayList<String> nomCoop = new ArrayList<String>(); // liste des génes coopérants pour la frappe changeant l'état de nomGeneTemporaire.
         ArrayList<String> nomEtat = new ArrayList<String>(); // liste des états des gènes de la liste précédente.
         boolean cooptest = false;
-
+        StringBuffer listeLevelCoop = new StringBuffer("abcdefghijklmnopqrstuvwxyz"); // pour donner le level d'une coop //GROS PROBL7ME SI ON DEPASSE Z!!!!!
+        int indiceLevelCoop = 0;
+                
         while (!nomProchainGene.equals("initial_context")) {
 
             etatIni = tok.nextToken();
@@ -228,7 +230,7 @@ public class AnToJson {
                     for (int j = 0; j < nomCoop.size(); j++) {
                         nomscoop += nomCoop.get(j) + "." + nomEtat.get(j) + "/";
                     }
-                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "\"value\":0,\"level\":\"a\",\"gene\":\""+nomscoop+"\"},},\n");  //création du noeud de coop
+                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "\"value\":0,\"level\":\""+listeLevelCoop.charAt(indiceLevelCoop)+"\",\"gene\":\""+nomscoop+"\"},},\n");  //création du noeud de coop
 
                     for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
 
@@ -238,6 +240,7 @@ public class AnToJson {
                     fleche.append(" {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"value\":0,\"type\":\"normal\"},\n"); // fleche du noeud de coop à l'état initial du géne frappé 
                     indiceCoop++; // valeur pour la prochaine coop
                     nGroupe++;    // idem 
+                    indiceLevelCoop++;
 
                 } else {
                     fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(0) + "." + nomEtat.get(0)) + ",\"target\":" + source + ",\"value\":0,\"type\":\"normal\"},\n");
