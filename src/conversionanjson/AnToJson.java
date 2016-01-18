@@ -141,8 +141,8 @@ public class AnToJson {
      *
      * A faire VALUE pour gène avec l'initial context
      *
-     * link: value= couleur (0=noir, 1=vert, 2=rouge, 3 flèche sans bout) faire
-     * le détecteur automatique...en javascript plutôt type = 0=flèche droite
+     * link: value= couleur (0=noir, 1=vert, 2=rouge, 3 flèche sans bout) 
+     * faire le détecteur automatique...en javascript plutôt type = 0=flèche droite
      * 1=flèche courbée pour les transitions fait
      *
      */
@@ -182,7 +182,7 @@ public class AnToJson {
                 nomProchainGene = tok.nextToken();       // = numéro de l'état tant qu'il y a un état à rajouter au groupe (ou gène); sinon = au nom du prochain gène à traiter
                 //    System.out.println(nomProchainGene);
                 if (nomProchainGene.equals(Integer.toString(etat))) {
-                    gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":" + etat + ",\"gene\":\"" + nomGeneTemporaire + "},\n");
+                    gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":" + etat + ",\"gene\":\"" + nomGeneTemporaire + "\"},\n");
                     l.add(nomGeneTemporaire + "." + etat);   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
 //           System.out.println(tok.nextElement());
@@ -239,11 +239,11 @@ public class AnToJson {
                     for (int j = 0; j < nomCoop.size(); j++) {
                         nomscoop += nomCoop.get(j) + "." + nomEtat.get(j) + "/";
                     }
-                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "\"value\":0,\"level\":\"" + listeLevelCoop.charAt(indiceLevelCoop) + "\",\"gene\":\"" + nomscoop + "\"},},\n");  //création du noeud de coop
+                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":\"" + listeLevelCoop.charAt(indiceLevelCoop) + "\",\"gene\":\"COOP_" + nomscoop + "\"},\n");  //création du noeud de coop
 
                     for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
 
-                        fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(k) + "." + nomEtat.get(k)) + ",\"target\":" + indiceCoop + ",\"type\":\"0\"},\n");
+                        fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(k) + "." + nomEtat.get(k)) + ",\"target\":" + indiceCoop + ",\"value\":3,\"type\":\"0\"},\n");
                     }
 
                     fleche.append(" {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"value\":0,\"type\":\"0\"},\n"); // fleche du noeud de coop à l'état initial du géne frappé 
