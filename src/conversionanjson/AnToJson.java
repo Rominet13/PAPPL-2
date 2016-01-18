@@ -158,7 +158,8 @@ public class AnToJson {
         int etat = 1;
         boolean memeGroupe = true;
         while (!nomPrem.equals(nomProchainGene)) {  // faiblesse de la condition d'arrêt A AMELIORER
-            gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n");
+            gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":0,\"gene\":\""+nomGeneTemporaire+"\"},\n"); // + ,"value":0,"level":0,"gene":"L"},
+                     // {"name":"AKT1.1","group":1},              // level donne le numéro de l'état du gène //value =1 si état actif 0 sinon 
             l.add(nomGeneTemporaire + ".0");   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n"); //1ère ligne du groupe suivant //tok.nextToken() vaut toujours 0 ici
 //                writer.write(tok.nextToken());
@@ -172,7 +173,7 @@ public class AnToJson {
                 nomProchainGene = tok.nextToken();       // = numéro de l'état tant qu'il y a un état à rajouter au groupe (ou gène); sinon = au nom du prochain gène à traiter
                 //    System.out.println(nomProchainGene);
                 if (nomProchainGene.equals(Integer.toString(etat))) {
-                    gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
+                    gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":"+etat+",\"gene\":\""+nomGeneTemporaire+"},\n");
                     l.add(nomGeneTemporaire + "." + etat);   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
 //           System.out.println(tok.nextElement());
