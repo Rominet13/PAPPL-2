@@ -87,29 +87,24 @@ public class AnToJson {
     }
 
     public static void decommenteur(String contenu) {
-        if(contenu.contains("%")){
         StringBuffer contenub = new StringBuffer(contenu);
-        String delimiteurs = "%\n";
-        StringTokenizer tok = new StringTokenizer(contenu, delimiteurs);
-        String nvContenu="";
-        String tmp="";
-        String prem = String.valueOf(contenub.charAt(0));
-            if (prem=="%") {
-                tok.nextToken();
-            }
-        if (tok.hasMoreElements()) {
-            nvContenu+=tok.nextToken();
+        int debut;
+        int fin;
+        while(contenu.contains("%")){
+        debut=contenub.indexOf("%");
+        fin=contenub.indexOf("\n", debut);
+        contenub.delete(debut, fin);
+        
+        System.out.println(" commentaire court enlevé");
         }
+        while(contenu.contains("%")){
+        debut=contenub.indexOf("%");
+        fin=contenub.indexOf("\n", debut);
+        contenub.delete(debut, fin);
+        
+        System.out.println(" commentaire court enlevé");
         }
-        else{
-            System.out.println("0 commentaire court!" );
-        }
-        if (contenu.contains("/*")) {
-            
-        }
-        else{
-            System.out.println("0 commentaire long!" );
-        }
+    
     }
 
     /**
