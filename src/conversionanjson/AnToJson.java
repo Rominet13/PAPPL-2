@@ -110,15 +110,15 @@ public class AnToJson {
             System.out.println(" commentaire court enlevé");
 //            System.out.println(contenu);
         }
-        
-        while(contenu.contains("/*")){
-        debut=contenub.indexOf("/*");
-        fin=contenub.indexOf("*/", debut);
-        contenub.delete(debut, fin+2);
-        contenu=contenub.toString();
-        System.out.println(" commentaire long enlevé");
-         System.out.println(contenu);
-        } 
+
+        while (contenu.contains("/*")) {
+            debut = contenub.indexOf("/*");
+            fin = contenub.indexOf("*/", debut);
+            contenub.delete(debut, fin + 2);
+            contenu = contenub.toString();
+            System.out.println(" commentaire long enlevé");
+            System.out.println(contenu);
+        }
         System.out.println("==============\n" + contenu);
         return contenu;
     }
@@ -136,6 +136,16 @@ public class AnToJson {
      *
      * //Convention: saut de ligne via "\n" (aucun BufferedWriter.newLine();)
      * (but éviter de se perdre dans les mélanges
+     *
+     * + ,"value":0,"level":0,"gene":"L"}, level donne le numéro de l'état du
+     * gène //value =1 si état actif 0 sinon
+     *
+     * A faire VALUE pour gène avec l'initial context
+     *
+     * link: value= couleur (0=noir, 1=vert, 2=rouge, 3 flèche sans bout) faire
+     * le détecteur automatique...en javascript plutôt type = 0=flèche droite
+     * 1=flèche courbée pour les transitions fait
+     *
      */
     public static StringBuffer ecritureStringJson(String remplisseur) {
         StringBuffer gene = new StringBuffer();
@@ -158,8 +168,8 @@ public class AnToJson {
         int etat = 1;
         boolean memeGroupe = true;
         while (!nomPrem.equals(nomProchainGene)) {  // faiblesse de la condition d'arrêt A AMELIORER
-            gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":0,\"gene\":\""+nomGeneTemporaire+"\"},\n"); // + ,"value":0,"level":0,"gene":"L"},
-                     // {"name":"AKT1.1","group":1},              // level donne le numéro de l'état du gène //value =1 si état actif 0 sinon 
+            gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":0,\"gene\":\"" + nomGeneTemporaire + "\"},\n"); // + ,"value":0,"level":0,"gene":"L"},
+            // {"name":"AKT1.1","group":1},              // level donne le numéro de l'état du gène //value =1 si état actif 0 sinon 
             l.add(nomGeneTemporaire + ".0");   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + tok.nextToken() + "\",\"group\":" + nGroupe + "},\n"); //1ère ligne du groupe suivant //tok.nextToken() vaut toujours 0 ici
 //                writer.write(tok.nextToken());
@@ -173,7 +183,7 @@ public class AnToJson {
                 nomProchainGene = tok.nextToken();       // = numéro de l'état tant qu'il y a un état à rajouter au groupe (ou gène); sinon = au nom du prochain gène à traiter
                 //    System.out.println(nomProchainGene);
                 if (nomProchainGene.equals(Integer.toString(etat))) {
-                    gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":"+etat+",\"gene\":\""+nomGeneTemporaire+"},\n");
+                    gene.append("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":" + etat + ",\"gene\":\"" + nomGeneTemporaire + "},\n");
                     l.add(nomGeneTemporaire + "." + etat);   // numérote le moindre état d'un géne dans l'ordre
 //writer.write("    {\"name\":\"" + nomGeneTemporaire + "." + etat + "\",\"group\":" + nGroupe + "},\n");
 //           System.out.println(tok.nextElement());
@@ -204,7 +214,7 @@ public class AnToJson {
         boolean cooptest = false;
         StringBuffer listeLevelCoop = new StringBuffer("abcdefghijklmnopqrstuvwxyz"); // pour donner le level d'une coop //GROS PROBL7ME SI ON DEPASSE Z!!!!!
         int indiceLevelCoop = 0;
-                
+
         while (!nomProchainGene.equals("initial_context")) {
 
             etatIni = tok.nextToken();
@@ -216,11 +226,11 @@ public class AnToJson {
             source = nomNumero(l, nomGeneTemporaire + "." + etatIni);  //utilité de la liste l du tout début de la méthode
             target = nomNumero(l, nomGeneTemporaire + "." + etatFin);
 
-            if ((nomProchainGene = tok.nextToken()).equals("when")) { 
+            if ((nomProchainGene = tok.nextToken()).equals("when")) {
                 //System.out.println("condition ");
                 nomCoop.add(tok.nextToken());
                 nomEtat.add(tok.nextToken());
-                while ((nomProchainGene = tok.nextToken()).equals("and")) {   
+                while ((nomProchainGene = tok.nextToken()).equals("and")) {
                     nomCoop.add(tok.nextToken());  //on remplit la liste de coopérants...
                     nomEtat.add(tok.nextToken());  //...avec leur état correspondant
                     cooptest = true;
@@ -230,20 +240,20 @@ public class AnToJson {
                     for (int j = 0; j < nomCoop.size(); j++) {
                         nomscoop += nomCoop.get(j) + "." + nomEtat.get(j) + "/";
                     }
-                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "\"value\":0,\"level\":\""+listeLevelCoop.charAt(indiceLevelCoop)+"\",\"gene\":\""+nomscoop+"\"},},\n");  //création du noeud de coop
+                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + "\"value\":0,\"level\":\"" + listeLevelCoop.charAt(indiceLevelCoop) + "\",\"gene\":\"" + nomscoop + "\"},},\n");  //création du noeud de coop
 
                     for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
 
-                        fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(k) + "." + nomEtat.get(k)) + ",\"target\":" + indiceCoop + ",\"type\":\"normal\"},\n");
+                        fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(k) + "." + nomEtat.get(k)) + ",\"target\":" + indiceCoop + ",\"type\":\"0\"},\n");
                     }
 
-                    fleche.append(" {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"value\":0,\"type\":\"normal\"},\n"); // fleche du noeud de coop à l'état initial du géne frappé 
+                    fleche.append(" {\"source\":" + indiceCoop + ",\"target\":" + source + ",\"value\":0,\"type\":\"0\"},\n"); // fleche du noeud de coop à l'état initial du géne frappé 
                     indiceCoop++; // valeur pour la prochaine coop
                     nGroupe++;    // idem 
                     indiceLevelCoop++;
 
                 } else {
-                    fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(0) + "." + nomEtat.get(0)) + ",\"target\":" + source + ",\"value\":0,\"type\":\"normal\"},\n");
+                    fleche.append(" {\"source\":" + nomNumero(l, nomCoop.get(0) + "." + nomEtat.get(0)) + ",\"target\":" + source + ",\"value\":0,\"type\":\"0\"},\n");
 
                 }
                 cooptest = false; //pas oublier pour la prochaine boucle
@@ -252,7 +262,7 @@ public class AnToJson {
             nomCoop.clear(); //on remet les listes de coopérant à 0
             nomEtat.clear();
 
-            fleche.append(" {\"source\":" + source + ",\"target\":" + target + ",\"value\":0,\"type\":\"normal\"},\n");       // écriture de la fléche de saut d'état d'un gène
+            fleche.append(" {\"source\":" + source + ",\"target\":" + target + ",\"value\":0,\"type\":\"1\"},\n");       // écriture de la fléche de transition/saut d'état d'un gène
             nomGeneTemporaire = nomProchainGene;
 //            System.out.println("coop: "+coop+"\n"+"fleche: "+fleche+"\n"); //"gene: "+gene+"\n"+
         } //fin while de fleche. On passe à la situation initiale.
