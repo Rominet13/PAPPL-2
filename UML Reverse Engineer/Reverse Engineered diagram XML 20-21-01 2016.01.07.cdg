@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ClassDiagram name="UML Class Diagram">
+  <ClassDiagramComponents>
+    <Class xPosition="50.0" yPosition="50.0" package="conversionanjson" name="AnToJson" visibility="public">
+      <Constructors/>
+      <Fields>
+        <Field name="logger" visibility="private" type="Logger" isStatic="true"/>
+      </Fields>
+      <Methods>
+        <Method name="lectureAn" visibility="private" isStatic="true" returnType="java.lang.String">
+          <Argument type="String" name="Argument0"/>
+        </Method>
+        <Method name="nomNumero" visibility="public" isStatic="true" returnType="int">
+          <Argument type="ArrayList&lt;String&gt;" name="Argument0"/>
+          <Argument type="String" name="Argument1"/>
+        </Method>
+        <Method name="ecritureStringJson" visibility="public" isStatic="true" returnType="java.lang.StringBuffer">
+          <Argument type="String" name="Argument0"/>
+        </Method>
+        <Method name="decommenteur" visibility="public" isStatic="true" returnType="void">
+          <Argument type="String" name="Argument0"/>
+        </Method>
+        <Method name="ecritureJson" visibility="public" isStatic="true" returnType="void">
+          <Argument type="StringBuffer" name="Argument0"/>
+          <Argument type="String" name="Argument1"/>
+        </Method>
+      </Methods>
+    </Class>
+    <Class xPosition="300.0" yPosition="50.0" package="conversionanjson" name="ConversionAnJson" visibility="public">
+      <Constructors/>
+      <Fields/>
+      <Methods>
+        <Method name="main" visibility="public" isStatic="true" returnType="void">
+          <Argument type="String[]" name="Argument0"/>
+        </Method>
+      </Methods>
+    </Class>
+  </ClassDiagramComponents>
+  <ClassDiagramRelations/>
+</ClassDiagram>

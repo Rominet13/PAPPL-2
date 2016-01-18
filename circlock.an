@@ -35,7 +35,7 @@
 
 "PER2" 0 -> 1 when "ClockBMAL"=1
 "PER2" 0 -> 1 when "alpha"=1
-"PER2" 1 -> 0 when "ClockBMAL"=0 % alpha???
+"PER2" 1 -> 0 when "ClockBMAL"=0 
 "PER2" 1 -> 0 when "alpha"=0
 
 "PERCRY" 0 -> 1 when "CRY1"=0 and "CRY2"=1 and "PER2"=1
@@ -50,3 +50,4 @@
 "RevErb_nuc" 1 -> 0 when "ClockBMAL"=0
 
 initial_context "BMAL1_cyt"=1, "Clock"=1
+% alpha??? sur la ligne 38 normalement
