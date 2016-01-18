@@ -2,7 +2,7 @@
  * Résumé: Classe lisant le ficher .an et creéant le fichier .json correspondant
  * avec automatiquement le même nom (seul l'extension change.)
  * Le nom du fichier .an à lire est rentré en paramétre, sans son extension .an. 
- * ATTENTION: il ne doit pas y avoir de commentaire dans le fichier source .an!!
+ * commentaire court et long autorisé!
  * Code: 4 méthodes "static"  (car l'utilisation est ponctuelle et ne nécessite pas d'attribut. On raisonne peut-être plus en impératif qu'en objet.)
  *     *lectureAn   -la  1ère lit le fichier .an, avec en paramétre son nom privé de son extension. Et elle stoque tout le texte dans un String ("contenu") qu'elle retourne.  
  *     *ecritureStringJson  -la 2nd "parse" (ou traite) le texte de "contenu" en paramétre et écrit le futur contenu du fichier .json dans des Strings intermédiaires (variables locales: gene, coop et fleche).
@@ -13,9 +13,8 @@
  *
  *  // peut être plus pratique avec l'utilisation des classes StringBuffer et StringBuilder (plus flexible, on peut modifier la chaine)
  *
- *  A ajouter:           -faire initial_context
- *                        -passer le String en StringBuffer pour supprimer les virgules en trop à la fin.
- *                       -autoriser les commentaires dans le fichier .an ou crée une classe qui les supprime tout en gardant celui avec les commentaires
+ *  A ajouter:           -faire/traiter initial_context dans "VALUE" de gène ( 1= actif, 0=inactif)
+ *                                      
  *                       -faire 2 débuggers pour vérifier le .an si ne reconnait pas le fichier .an : -1 dans une autre classe qui regard la struture global du fichier et la présence de commentaire en indiquant la ligne où il se trouve.
  *                                                                              -1 ici qui suit en détails et permet d'indiquer la ligne problèmatique du .an
  *
