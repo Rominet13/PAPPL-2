@@ -44,7 +44,7 @@ public class AnToJson {
 
     public static void methode(String nomAN) {
 //        ecritureJson(ecritureStringJson(lectureAn(nomAN), nomAN), nomAN);
-        ecritureJson(ecritureStringJson(lectureAn(nomAN)), nomAN);
+        ecritureJson(ecritureStringJson(decommenteur(lectureAn(nomAN))), nomAN);
     }
 
     /**
@@ -86,25 +86,41 @@ public class AnToJson {
         return contenu;
     }
 
-    public static void decommenteur(String contenu) {
+    public static String decommenteur(String contenu) {
+        System.out.println("test");
         StringBuffer contenub = new StringBuffer(contenu);
         int debut;
-        int fin;
-        while(contenu.contains("%")){
-        debut=contenub.indexOf("%");
-        fin=contenub.indexOf("\n", debut);
-        contenub.delete(debut, fin);
-        
-        System.out.println(" commentaire court enlevé");
+        int fin = -1;
+        while (contenu.contains("%")) {
+            debut = contenub.indexOf("%");
+
+            try {
+                fin = contenub.indexOf("\n", debut);
+            } catch (java.lang.StringIndexOutOfBoundsException e) {
+                e.printStackTrace();
+                logger.info("pas de fin de ligne, c'est une fin de doc/string ");
+            } finally {
+                if (fin == -1) {
+                    fin = contenub.length();
+                }
+            }
+            contenub.delete(debut, fin);
+            fin = -1;
+            contenu = contenub.toString();
+            System.out.println(" commentaire court enlevé");
+//            System.out.println(contenu);
         }
-        while(contenu.contains("%")){
-        debut=contenub.indexOf("%");
-        fin=contenub.indexOf("\n", debut);
-        contenub.delete(debut, fin);
         
-        System.out.println(" commentaire court enlevé");
-        }
-    
+        while(contenu.contains("/*")){
+        debut=contenub.indexOf("/*");
+        fin=contenub.indexOf("*/", debut);
+        contenub.delete(debut, fin+2);
+        contenu=contenub.toString();
+        System.out.println(" commentaire long enlevé");
+         System.out.println(contenu);
+        } 
+        System.out.println("==============\n" + contenu);
+        return contenu;
     }
 
     /**
