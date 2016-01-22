@@ -18,6 +18,7 @@
  *                       -faire 2 débuggers pour vérifier le .an si ne reconnait pas le fichier .an : -1 dans une autre classe qui regard la struture global du fichier et la présence de commentaire en indiquant la ligne où il se trouve.
  *                                                                              -1 ici qui suit en détails et permet d'indiquer la ligne problèmatique du .an
  *
+* ATTENTION LIGNE 256 !!! :  
  */
 package conversionanjson;
 
@@ -32,6 +33,7 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.omg.CORBA.portable.IndirectionException;
 
 /**
  *
@@ -91,7 +93,7 @@ public class AnToJson {
  * @return 
  */
     public static String decommenteur(String contenu) {
-        System.out.println("test");
+//        System.out.println("test");
         StringBuffer contenub = new StringBuffer(contenu);
         int debut;
         int fin = -1;
@@ -110,7 +112,7 @@ public class AnToJson {
             }
             contenub.delete(debut, fin);
             fin = -1;
-            contenu = contenub.toString();
+//            contenu = contenub.toString();
             System.out.println(" commentaire court enlevé");
 //            System.out.println(contenu);
         }
@@ -121,9 +123,9 @@ public class AnToJson {
             contenub.delete(debut, fin + 2);
             contenu = contenub.toString();
             System.out.println(" commentaire long enlevé");
-            System.out.println(contenu);
+//            System.out.println(contenu);
         }
-        System.out.println("==============\n" + contenu);
+//        System.out.println("==============\n" + contenu);
         return contenu;
     }
 
@@ -165,6 +167,7 @@ public class AnToJson {
 
         gene.append("{\n" + "  \"nodes\":[\n");  // écriture 2 1ères ligne d'entête ; situation: dans écriture des "nodes" (gènes) 
 //writer.write("{\n" + "  \"nodes\":[\n"); 
+int indiceLevelCoop = 0;//pour les coopérations voir 2nd partie
 try{
         int nGroupe = 1;
         String nomGeneTemporaire = tok.nextToken(); //utilisé pour les différents états du géne.
@@ -218,9 +221,10 @@ nbLigneEffective++;
         int indiceCoop = l.size();  // pour avoir la ligne/indice qui permet de bien diriger les flèches.
         ArrayList<String> nomCoop = new ArrayList<String>(); // liste des génes coopérants pour la frappe changeant l'état de nomGeneTemporaire.
         ArrayList<String> nomEtat = new ArrayList<String>(); // liste des états des gènes de la liste précédente.
+        ArrayList<String> listeCoopPrec = new ArrayList<String>(); // liste des coops déjà rentré pour vérifier si exite déjà (ça arrive). Sinon ça rajoute un noeud en plus non utilisé dans le graph
         boolean cooptest = false;
         StringBuffer listeLevelCoop = new StringBuffer("abcdefghijklmnopqrstuvwxyz"); // pour donner le level d'une coop //GROS PROBL7ME SI ON DEPASSE Z!!!!!
-        int indiceLevelCoop = 0;
+        indiceLevelCoop = 0;
 
         while (!nomProchainGene.equals("initial_context")) {
 
@@ -247,7 +251,16 @@ nbLigneEffective++;
                     for (int j = 0; j < nomCoop.size(); j++) {
                         nomscoop += nomCoop.get(j) + "." + nomEtat.get(j) + "/";
                     }
-                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":\"--\",\"gene\":\"COOP_" + nomscoop + "\"},\n");  // Problème pour les gros réseaux: + listeLevelCoop.charAt(indiceLevelCoop) + "\",\"gene\":\"COOP_" + nomscoop + "\"},\n");  //création du noeud de coop
+                    for (int i = 0; i < listeCoopPrec.size(); i++) {
+                        if (listeCoopPrec.get(i).equals(nomscoop)) {
+                            nomscoop+="*";
+                            System.out.println("TEST RENTR2 DANS IF");
+                        }
+//                        System.out.println("dans la boucle");
+                    }
+                    listeCoopPrec.add(nomscoop);
+                    
+                    coop.append("    {\"name\":\"COOP_" + nomscoop + "\",\"group\":" + nGroupe + ",\"value\":0,\"level\":\"--\",\"gene\":\"COOP_" + nomscoop + "\"},\n");  // -- ou  Problème pour les gros réseaux: + listeLevelCoop.charAt(indiceLevelCoop) + "\",\"gene\":\"COOP_" + nomscoop + "\"},\n");  //création du noeud de coop
 nbLigneEffective++;
                     for (int k = 0; k < nomCoop.size(); k++) {   //flèche de chaque coopérant vers le noeud de coop, après la création du noeud de coop
 
@@ -280,10 +293,16 @@ nbLigneEffective++;
 //            while (tok.hasMoreElements()) {
 //                writer.write(tok.nextToken()); 
 //            }
+
 }
 catch(Exception e){
+    e.printStackTrace();
     System.out.println("ATTENTION peut être une erreur ou juste absence de \"initial context\"\nNuméro dernière ligne écrite: "+nbLigneEffective);
 }
+if (indiceLevelCoop>=26) {
+        logger.severe("==========ATTENTION: ERREUR: impossible d'utiliser les lettres pour les coopération (plus de 26 pour ce fichier)=================================");
+        }
+
         coop.deleteCharAt(coop.lastIndexOf(","));
         coop.append("  ],\n");
         fleche.deleteCharAt(fleche.lastIndexOf(","));
